@@ -1,0 +1,27 @@
+{
+  "name": "qr-code-server",
+  "version": "1.0.0",
+  "description": "A Node.js server for QR code generation and placement, providing your AR experience",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server",
+    "dev": "nodemon server"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=20.10.0"
+  },
+  "author": "HIT AR Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Henosit/QR-React-App"
+  },
+  "homepage": "https://github.com/Henosit/QR-React-App#readme",
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
