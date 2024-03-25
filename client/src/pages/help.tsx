@@ -5,16 +5,12 @@ import NavLink from "react-bootstrap/NavLink";
 function Help() {
   return (
     <>
-      <Dropdown as={NavItem}>
-        <Dropdown.Toggle as={NavLink}>
+      <Dropdown as={NavItem} id="dropdown-container">
+        <Dropdown.Toggle as={NavLink} id="dropdown-navlink">
           Click for more information…
         </Dropdown.Toggle>
-        <Dropdown.Menu>
+        <Dropdown.Menu id="dropdown-content">
           <Dropdown.Item>
-            {/* <div className="container-help">
-        <a href="#" className="slide-button">
-          <img src="src\assets\help.png"></img>
-          <div className="slide-button-info"> */}
             <h2>Wall instructions</h2>
             <p>
               <ol>
