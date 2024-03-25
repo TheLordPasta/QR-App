@@ -6,7 +6,19 @@ require("dotenv").config(); // Load environment variables from .env file
 
 const app = express();
 app.use(express.json());
-const upload = multer({ dest: "uploads/" });
+
+// Modify Multer storage to specify filename with .mp3 extension
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -42,9 +54,9 @@ db.connect((err) => {
 });
 
 // Route for posting data
-app.post("/arapp", (req, res) => {
+app.post("/arapp", upload.single("mp3"), (req, res) => {
   const { lon, lat, text, animations_string, model_name } = req.body;
-  const mp3_path = req.file ? req.file.path : null; // Assuming MP3 file is uploaded with the request
+  const mp3_path = req.file ? `uploads/${req.file.filename}` : null; // Construct MP3 file path
 
   const sql =
     "INSERT INTO ar_app_data (lon, lat, text, animations_string, mp3_path, model_name) VALUES (?, ?, ?, ?, ?, ?)";
@@ -89,15 +101,16 @@ app.get("/arapp", (req, res) => {
   });
 });
 
-// Route for uploading MP3 files
-app.post("/upload", upload.single("mp3"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded" });
-  }
-  const mp3_path = req.file.path;
-  return res
-    .status(200)
-    .json({ message: "File uploaded successfully", path: mp3_path });
+// Route for getting MP3 files based on mp3_path
+app.get("/uploads/:mp3Path", (req, res) => {
+  const mp3Path = req.params.mp3Path;
+  const filePath = path.join(__dirname, "uploads", mp3Path); // Construct the file path
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("Error downloading file:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
 });
 
 const PORT = process.env.PORT || 8081;
