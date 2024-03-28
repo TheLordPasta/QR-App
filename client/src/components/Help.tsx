@@ -12,7 +12,7 @@ function Help() {
         <Dropdown.Menu id="dropdown-content">
           <Dropdown.Item>
             <h2>Wall instructions</h2>
-            <p>
+            <div>
               <ol>
                 <li>Print the QR code.</li>
                 <li>
@@ -22,9 +22,9 @@ function Help() {
                   from <br></br>the floor.
                 </li>{" "}
               </ol>
-            </p>
+            </div>
             <h2>Table guidelines</h2>
-            <p>
+            <div>
               <ol>
                 <li>Print the QR code.</li>
                 <li>
@@ -36,7 +36,7 @@ function Help() {
                   button.
                 </li>
               </ol>
-            </p>
+            </div>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
