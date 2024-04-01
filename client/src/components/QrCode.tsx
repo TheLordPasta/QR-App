@@ -2,7 +2,7 @@ import QRCode from "react-qr-code";
 
 function QRCodeWall() {
   return (
-    <div id="wallQR">
+    <div id="wallQR" style={{ position: "absolute" }}>
       <QRCode
         value="<https://www.google.com>"
         style={{
@@ -18,7 +18,7 @@ function QRCodeWall() {
 
 function QRCodeDesk() {
   return (
-    <div id="deskQR">
+    <div id="deskQR" style={{ position: "absolute" }}>
       <QRCode
         value="<https://www.google.com>"
         style={{

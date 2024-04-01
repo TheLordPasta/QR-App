@@ -7,36 +7,36 @@ function Help() {
     <>
       <Dropdown as={NavItem} id="dropdown-container">
         <Dropdown.Toggle as={NavLink} id="dropdown-navlink">
-          Click for more information…
+          more info
         </Dropdown.Toggle>
         <Dropdown.Menu id="dropdown-content">
           <Dropdown.Item>
             <h2>Wall instructions</h2>
-            <p>
+            <div>
               <ol>
                 <li>Print the QR code.</li>
                 <li>
-                  Place the QR on the desired wall.<br></br>It is mandatory to
-                  place the center of the QR at a height<br></br> (what you
-                  entered in centimeters) from the floor.
+                  Place the QR on the<br></br> desired wall. It is<br></br>{" "}
+                  mandatory to place <br></br>the center of the QR<br></br> at a
+                  height (what<br></br> you entered in <br></br>centimeters)
+                  from <br></br>the floor.
                 </li>{" "}
               </ol>
-            </p>
+            </div>
             <h2>Table guidelines</h2>
-            <p>
+            <div>
               <ol>
                 <li>Print the QR code.</li>
                 <li>
-                  Place on the desired table.<br></br>Pay attention to the
-                  arrows, the character will turn<br></br> in the direction of
-                  the lower arrow.
-                  <br></br>At the end there will be a "next step" button.
+                  Place on the desired<br></br> table. Pay attention<br></br> to
+                  the arrows, the <br></br>character will turn<br></br> in the
+                  direction of<br></br> the lower arrow.
+                  <br></br>At the end there will<br></br> be a "next step"
+                  <br></br>
+                  button.
                 </li>
               </ol>
-            </p>
-            {/* </div>
-        </a>
-      </div> */}
+            </div>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
