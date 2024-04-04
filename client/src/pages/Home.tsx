@@ -6,6 +6,7 @@ import deskImage from "../assets/desk.jpg";
 import wallImage from "../assets/wall.jpeg";
 import { useState } from "react";
 import Header from "../components/Header";
+//import { QRCodeWall, QRCodeDesk } from "../components/QrCode";
 
 // Define the type for user input
 interface UserInputType {
@@ -14,7 +15,6 @@ interface UserInputType {
   selection: string;
   componentToRender: ReactNode; // Add this line
 }
-
 // Initial state for user input
 const initialState = {
   wallInput: "",
@@ -37,16 +37,25 @@ function Home() {
   const setFloorInput = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput({ ...userInput, floorInput: e.target.value });
   };
+  const getWallInput = (): string => {
+    return userInput.wallInput;
+  };
+
+  // Retrieve floor input value
+  const getFloorInput = (): string => {
+    return userInput.floorInput;
+  };
 
   const placeIt = (selection: "wall" | "desk") => {
     let component;
     console.log("Placing QR Code on:", userInput.selection.toString);
     if (selection == "wall") {
       printer.QRCodePrintWall();
-      console.log(`wall`);
+
+      console.log(`printing wall qr..`);
     } else if (selection == "desk") {
       printer.QRCodePrintDesk();
-      console.log(`desk`);
+      console.log(`Printing desk qr..`);
     } else {
       console.log("selection invalid value");
     }
@@ -65,6 +74,29 @@ function Home() {
       setImageSrc(deskImage);
     }
   };
+  //Where will the QR Url lead to? What's the PK? How can the user access the QR again through the DB?
+  const uploadToDB = (state: "wall" | "desk") => {
+    console.log("Uploading QR Code to DB:");
+    if (state == "wall") {
+      //add a wall qr uploader method that will upload the inputs aswell
+      const jsonData = JSON.stringify({ getWallInput, getFloorInput, state });
+      console.log(`wall qr successfully uploaded!`);
+      fetch("https://www.PATH-TO-DB.co.il", {
+        //CHEN AND AIDEN THIS IS WHERE YOU PUT YOUR URI TO MYSQL!!
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonData,
+      });
+    } else if (state == "desk") {
+      const jsonData = JSON.stringify({ state });
+
+      console.log(`desk qr successfully uploaded!`);
+    } else {
+      console.log("selection invalid value");
+    }
+  };
 
   return (
     <>
@@ -72,7 +104,7 @@ function Home() {
       <h1>Design your QR Experience</h1>
       <div className="content">
         <div className="form-container">
-          <h2>Where would you like to place the QR code?</h2>
+          <h1>Where would you like to place the QR code?</h1>
           <div>
             <button
               className="top-button"
@@ -118,8 +150,16 @@ function Home() {
             <div className="submit-button-container">
               <input
                 type="submit"
-                value="Place It"
+                value="Print QR"
                 onClick={() => placeIt("wall")}
+              />
+              {userInput.componentToRender}
+            </div>
+            <div className="submit-button-container">
+              <input
+                type="submit"
+                value="Upload QR to DB"
+                onClick={() => uploadToDB("wall")}
               />
               {userInput.componentToRender}
             </div>
@@ -132,8 +172,16 @@ function Home() {
             <div className="submit-button-container">
               <input
                 type="submit"
-                value="Place It"
+                value="Print QR"
                 onClick={() => placeIt("desk")}
+              />
+              {userInput.componentToRender}
+            </div>
+            <div className="submit-button-container">
+              <input
+                type="submit"
+                value="Upload QR to DB"
+                onClick={() => uploadToDB("desk")}
               />
               {userInput.componentToRender}
             </div>

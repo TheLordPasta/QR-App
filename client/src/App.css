@@ -97,8 +97,10 @@ label,
 input {
   display: block;
   margin-bottom: 10px;
-  font-size: 18px;
+  margin-left: 15px;
+  font-size: 24px;
   font-weight: 200;
+  font-family: var(--main-font-family);
 }
 
 img {
@@ -110,9 +112,11 @@ img {
 
 input[type="number"] {
   padding: 5px;
+  font-size: 20px;
+  margin-left: 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  width: 100%;
+  width: 50%;
 }
 
 #wallDiv,
@@ -166,6 +170,7 @@ button:hover {
 
 input[type="submit"],
 button {
+  font-size: 24px !important;
   margin: 10px !important;
   padding: 10px 20px !important;
   background-color: var(--color-button-text) !important;
