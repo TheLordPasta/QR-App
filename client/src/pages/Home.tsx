@@ -1,101 +1,86 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
 import { ReactNode } from "react";
 import "../App.css";
-import printer from "../components/printerQR";
+import printer from "../components/printerQR"; // Assuming printerQR file exists
 import deskImage from "../assets/desk.jpg";
 import wallImage from "../assets/wall.jpeg";
-import { useState } from "react";
 import Header from "../components/Header";
-//import { QRCodeWall, QRCodeDesk } from "../components/QrCode";
+import { QRCodeWall, QRCodeDesk, QRCodeOnly } from "../components/QrCode";
 
-// Define the type for user input
 interface UserInputType {
   wallInput: string;
   floorInput: string;
   selection: string;
-  componentToRender: ReactNode; // Add this line
+  componentToRender: ReactNode | null; // Updated type
 }
-// Initial state for user input
-const initialState = {
+
+const initialState: UserInputType = {
   wallInput: "",
   floorInput: "",
   selection: "",
   componentToRender: null,
 };
+
 function Home() {
-  // State variables
   const [userInput, setUserInput] = useState<UserInputType>(initialState);
   const [activeDiv, setActiveDiv] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState<string>(wallImage);
 
-  // Update wall input state
   const setWallInput = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput({ ...userInput, wallInput: e.target.value });
   };
 
-  // Update floor input state
   const setFloorInput = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput({ ...userInput, floorInput: e.target.value });
   };
-  const getWallInput = (): string => {
-    return userInput.wallInput;
-  };
-
-  // Retrieve floor input value
-  const getFloorInput = (): string => {
-    return userInput.floorInput;
-  };
 
   const placeIt = (selection: "wall" | "desk") => {
-    let component;
-    console.log("Placing QR Code on:", userInput.selection.toString);
-    if (selection == "wall") {
-      printer.QRCodePrintWall();
+    let component = null; // Initialize component
 
-      console.log(`printing wall qr..`);
-    } else if (selection == "desk") {
-      printer.QRCodePrintDesk();
+    if (selection === "wall") {
+      printer.QRCodePrintWall(); // Assuming printer has this method
+      console.log(`Printing wall qr..`);
+    } else if (selection === "desk") {
+      printer.QRCodePrintDesk(); // Assuming printer has this method
       console.log(`Printing desk qr..`);
     } else {
-      console.log("selection invalid value");
+      console.log("Invalid selection");
     }
+
     setUserInput({ ...userInput, selection, componentToRender: component });
   };
 
-  // Handle button click to set active div
   const handleButtonClick = (divId: string) => {
     setActiveDiv(divId);
-    // let image = document.getElementById("display-draft") as HTMLImageElement; // Cast to HTMLImageElement for TypeScript
 
-    // Determine which image to use based on the button clicked
     if (divId === "wallDiv") {
       setImageSrc(wallImage);
     } else if (divId === "tableDiv") {
       setImageSrc(deskImage);
     }
   };
-  //Where will the QR Url lead to? What's the PK? How can the user access the QR again through the DB?
-  const uploadToDB = (state: "wall" | "desk") => {
-    console.log("Uploading QR Code to DB:");
-    if (state == "wall") {
-      //add a wall qr uploader method that will upload the inputs aswell
-      const jsonData = JSON.stringify({ getWallInput, getFloorInput, state });
-      console.log(`wall qr successfully uploaded!`);
-      fetch("https://www.PATH-TO-DB.co.il", {
-        //CHEN AND AIDEN THIS IS WHERE YOU PUT YOUR URI TO MYSQL!!
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonData,
-      });
-    } else if (state == "desk") {
-      const jsonData = JSON.stringify({ state });
 
-      console.log(`desk qr successfully uploaded!`);
-    } else {
-      console.log("selection invalid value");
-    }
+  const uploadToDB = (state: "wall" | "desk") => {
+    let qrCanvas = document.getElementById("qr-only") as HTMLCanvasElement;
+    let dataUrl = qrCanvas.toDataURL("image/png");
+    let formData = new FormData();
+
+    formData.append("qr_image", dataUrl);
+    formData.append("cm_from_ground", userInput.floorInput);
+    formData.append("cm_out_of_wall", userInput.wallInput);
+    formData.append("QR_placement_choice", state === "wall" ? "Wall" : "Desk"); // Correctly set QR_placement_choice
+
+    fetch("http://localhost:8081/arapp/qrimage", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error("Error uploading QR code:", error);
+      });
   };
 
   return (
@@ -125,7 +110,6 @@ function Home() {
             </button>
           </div>
 
-          {/* Wall Div */}
           <div
             id="wallDiv"
             style={{ display: activeDiv === "wallDiv" ? "block" : "none" }}
@@ -153,7 +137,6 @@ function Home() {
                 value="Print QR"
                 onClick={() => placeIt("wall")}
               />
-              {userInput.componentToRender}
             </div>
             <div className="submit-button-container">
               <input
@@ -161,10 +144,9 @@ function Home() {
                 value="Upload QR to DB"
                 onClick={() => uploadToDB("wall")}
               />
-              {userInput.componentToRender}
             </div>
           </div>
-          {/* Table Div */}
+
           <div
             id="tableDiv"
             style={{ display: activeDiv === "tableDiv" ? "block" : "none" }}
@@ -175,7 +157,6 @@ function Home() {
                 value="Print QR"
                 onClick={() => placeIt("desk")}
               />
-              {userInput.componentToRender}
             </div>
             <div className="submit-button-container">
               <input
@@ -183,7 +164,6 @@ function Home() {
                 value="Upload QR to DB"
                 onClick={() => uploadToDB("desk")}
               />
-              {userInput.componentToRender}
             </div>
           </div>
         </div>
@@ -196,6 +176,12 @@ function Home() {
           />
         </div>
       </div>
+
+      <QRCodeDesk />
+      <QRCodeWall />
+      <canvas id="qr-only">
+        <QRCodeOnly />
+      </canvas>
     </>
   );
 }
