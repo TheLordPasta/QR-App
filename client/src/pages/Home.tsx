@@ -6,6 +6,7 @@ import deskImage from "../assets/desk.jpg";
 import wallImage from "../assets/wall.jpeg";
 import Header from "../components/Header";
 import { QRCodeWall, QRCodeDesk, QRCodeOnly } from "../components/QrCode";
+import domtoimage from "dom-to-image";
 
 interface UserInputType {
   wallInput: string;
@@ -59,28 +60,47 @@ function Home() {
       setImageSrc(deskImage);
     }
   };
+  const uploadToDB = async (state: "wall" | "desk") => {
+    const qrImage = document.getElementById("qr-only");
 
-  const uploadToDB = (state: "wall" | "desk") => {
-    let qrCanvas = document.getElementById("qr-only") as HTMLCanvasElement;
-    let dataUrl = qrCanvas.toDataURL("image/png");
-    let formData = new FormData();
+    if (!qrImage) {
+      console.error("QR image element not found");
+      return;
+    } else {
+      console.log("QR image was found");
+    }
 
-    formData.append("qr_image", dataUrl);
-    formData.append("cm_from_ground", userInput.floorInput);
-    formData.append("cm_out_of_wall", userInput.wallInput);
-    formData.append("QR_placement_choice", state === "wall" ? "Wall" : "Desk"); // Correctly set QR_placement_choice
+    try {
+      const dataUrl = await domtoimage.toPng(qrImage);
+      const blobData = await fetch(dataUrl).then((res) => res.blob());
 
-    fetch("http://localhost:8081/arapp/qrimage", {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error("Error uploading QR code:", error);
+      const formData = new FormData();
+      formData.append("qr_image", blobData);
+
+      if (userInput.wallInput && userInput.floorInput) {
+        console.log("User input is Wall");
+        formData.append("cm_from_ground", userInput.floorInput);
+        formData.append("cm_out_of_wall", userInput.wallInput);
+        formData.append("qr_placement_choice", "Wall");
+      } else {
+        console.log("User input is Desk");
+        formData.append("qr_placement_choice", "Desk");
+      }
+
+      const response = await fetch("http://localhost:8081/arapp/qrimage", {
+        method: "POST",
+        body: formData,
       });
+
+      if (response.ok) {
+        console.log("QR uploaded successfully");
+        setUserInput(initialState); // Reset user input after successful upload
+      } else {
+        console.error("Failed to upload QR");
+      }
+    } catch (error) {
+      console.error("Error uploading QR code:", error);
+    }
   };
 
   return (
@@ -134,15 +154,15 @@ function Home() {
             <div className="submit-button-container">
               <input
                 type="submit"
-                value="Print QR"
-                onClick={() => placeIt("wall")}
+                value="Upload QR to DB"
+                onClick={() => uploadToDB("wall")}
               />
             </div>
             <div className="submit-button-container">
               <input
                 type="submit"
-                value="Upload QR to DB"
-                onClick={() => uploadToDB("wall")}
+                value="Print QR"
+                onClick={() => placeIt("wall")}
               />
             </div>
           </div>
@@ -154,15 +174,15 @@ function Home() {
             <div className="submit-button-container">
               <input
                 type="submit"
-                value="Print QR"
-                onClick={() => placeIt("desk")}
+                value="Upload QR to DB"
+                onClick={() => uploadToDB("desk")}
               />
             </div>
             <div className="submit-button-container">
               <input
                 type="submit"
-                value="Upload QR to DB"
-                onClick={() => uploadToDB("desk")}
+                value="Print QR"
+                onClick={() => placeIt("desk")}
               />
             </div>
           </div>
@@ -179,9 +199,9 @@ function Home() {
 
       <QRCodeDesk />
       <QRCodeWall />
-      <canvas id="qr-only">
+      <div id="qr-only">
         <QRCodeOnly />
-      </canvas>
+      </div>
     </>
   );
 }

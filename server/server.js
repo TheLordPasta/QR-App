@@ -4,6 +4,8 @@ const multer = require("multer");
 const path = require("path");
 require("dotenv").config(); // Load environment variables from .env file
 const cors = require("cors");
+const blobToImage = require("blob-to-image");
+const fs = require("fs");
 
 const app = express();
 app.use(express.json());
@@ -16,7 +18,22 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
+    let fileExtension = "";
+
+    // // Check if it's a blob file
+    // if (file.mimetype != "audio/mpeg") {
+    //   console.log("Blob");
+    //   fileExtension = ".blob"; // Set the extension for blob files
+    // } else {
+    //   fileExtension = path.extname(file.originalname); // Use original file extension for other files
+    // }
+
+    const fileName =
+      uniqueSuffix +
+      "-" +
+      file.originalname.replace(fileExtension, "") +
+      fileExtension;
+    cb(null, fileName);
   },
 });
 
@@ -46,8 +63,8 @@ db.connect((err) => {
     mp3_path VARCHAR(255),
     model_name VARCHAR(255),
     word_timings TEXT,
-    cm_from_ground DECIMAL(10,2),
-    cm_out_of_wall DECIMAL(10,2),
+    cm_from_ground DECIMAL(10,2) DEFAULT NULL,
+    cm_out_of_wall DECIMAL(10,2) DEFAULT NULL,
     QR_placement_choice ENUM('Wall', 'Desk')
   )`;
   db.query(createTableQuery, (createErr, result) => {
@@ -175,6 +192,43 @@ app.post("/arapp/qrimage", upload.single("qr_image"), (req, res) => {
       .status(200)
       .json({ message: "QR image inserted successfully", id: result.insertId });
   });
+});
+
+// Route for converting the blob to an image
+app.get("/arapp/qrimage/blobtoimage/:fileName", async (req, res) => {
+  try {
+    const { fileName } = req.params; // Extract the file name from the URL parameters
+    const filePath = path.join(__dirname, "uploads", fileName);
+
+    // Read the blob data from the file
+    const blobData = fs.readFileSync(filePath, "base64");
+
+    // Convert blob to image
+    const imageData = await blobToImage(blobData);
+
+    // Generate a unique file name for the downloaded image
+    const downloadedFileName = `downloaded_image_${Date.now()}.png`;
+
+    // Save the image to a temporary file
+    fs.writeFileSync(downloadedFileName, imageData, "base64");
+
+    // Send the file as a downloadable attachment
+    res.download(downloadedFileName, (err) => {
+      if (err) {
+        console.error("Error downloading file:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+      } else {
+        // Remove the temporary file after it has been sent
+        fs.unlinkSync(downloadedFileName);
+      }
+    });
+  } catch (error) {
+    console.error(
+      "Error converting blob to image or handling file download:",
+      error
+    );
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 // Route for updating word timings for an existing row based on id
