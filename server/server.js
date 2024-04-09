@@ -263,18 +263,6 @@ app.get("/uploads/:mp3Path", (req, res) => {
   });
 });
 
-// Route for getting QR images based on QR image path
-app.get("/uploads/:qrPath", (req, res) => {
-  const mp3Path = req.params.mp3Path;
-  const filePath = path.join(__dirname, "uploads", qrPath); // Construct the file path
-  res.download(filePath, (err) => {
-    if (err) {
-      console.error("Error downloading file:", err);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
-});
-
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
