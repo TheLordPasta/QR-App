@@ -13,7 +13,8 @@ const printElement = (elementId: string) => {
 
   document.body.innerHTML = printContents; // Replace the page content with the print content
   window.print(); // Trigger the print dialog
-  location.reload();
+  location.reload();//y
+  
 };
 
 const QRCodePrintDesk = () => {
