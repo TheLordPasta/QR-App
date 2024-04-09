@@ -13,7 +13,7 @@ const printElement = (elementId: string) => {
 
   document.body.innerHTML = printContents; // Replace the page content with the print content
   window.print(); // Trigger the print dialog
-  location.reload();//y
+  location.reload();//y/
   
 };
 
@@ -25,8 +25,6 @@ const QRCodePrintWall = () => {
   printElement("wallQR"); // Update this ID to match your wall QR code's element ID
 };
 
-<<<<<<< Updated upstream
-=======
 const QRCodePrintOnlyHidden=()=>{
   const para=document.getElementById("QrCodeOnlyParagraph");
   const qr=document.getElementById("QrCodeOnly");
@@ -56,7 +54,6 @@ const QRCodePrintOnlyShown=()=>{
   para.style.visibility="visible";
 }
 
->>>>>>> Stashed changes
 const PrinterQR = {
   QRCodePrintDesk,
   QRCodePrintWall,
