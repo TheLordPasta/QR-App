@@ -7,7 +7,6 @@ import wallImage from "../assets/wall.jpeg";
 import Header from "../components/Header";
 import { QRCodeWall, QRCodeDesk, QRCodeOnly } from "../components/QrCode";
 import domtoimage from "dom-to-image";
-import html2canvas from "html2canvas";
 
 interface UserInputType {
   wallInput: string;
@@ -61,40 +60,22 @@ function Home() {
       setImageSrc(deskImage);
     }
   };
-  // Inside uploadToDB function
   const uploadToDB = async (state: "wall" | "desk") => {
-    const qrImageDiv = document.getElementById("qr-only");
+    const qrImage = document.getElementById("qr-only");
 
-    if (!qrImageDiv) {
-      console.error("QR image div element not found");
+    if (!qrImage) {
+      console.error("QR image element not found");
       return;
+    } else {
+      console.log("QR image was found");
     }
 
     try {
-      const canvas = await html2canvas(qrImageDiv, {
-        scale: 2, // Adjust scale as needed
-        useCORS: false, // Set useCORS to false
-      });
-
-      // Debugging: Check canvas size
-      console.log("Canvas size:", canvas.width, "x", canvas.height);
-
-      // Convert canvas to Blob
-      const blobData = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), "image/png");
-      });
-
-      if (!blobData) {
-        console.error("Failed to convert canvas to Blob");
-        return;
-      }
-
-      // Debugging: Check Blob size and type
-      console.log("Blob size:", blobData.size);
-      console.log("Blob type:", blobData.type);
+      const dataUrl = await domtoimage.toPng(qrImage);
+      const blobData = await fetch(dataUrl).then((res) => res.blob());
 
       const formData = new FormData();
-      formData.append("qr_image", blobData, "qr_image.png");
+      formData.append("qr_image", blobData);
 
       if (userInput.wallInput && userInput.floorInput) {
         console.log("User input is Wall");
@@ -106,26 +87,16 @@ function Home() {
         formData.append("qr_placement_choice", "Desk");
       }
 
-      // Debugging: Check FormData contents
-      for (const pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
       const response = await fetch("http://localhost:8081/arapp/qrimage", {
         method: "POST",
         body: formData,
       });
 
-      const responseData = await response.json(); // Assuming server responds with JSON data
-
       if (response.ok) {
         console.log("QR uploaded successfully");
         setUserInput(initialState); // Reset user input after successful upload
       } else {
-        console.error(
-          "Failed to upload QR:",
-          responseData.error || "Unknown error"
-        );
+        console.error("Failed to upload QR");
       }
     } catch (error) {
       console.error("Error uploading QR code:", error);
@@ -228,13 +199,7 @@ function Home() {
 
       <QRCodeDesk />
       <QRCodeWall />
-      <div
-        id="qr-only"
-        style={{
-          width: "240px",
-          height: "240px",
-        }}
-      >
+      <div id="qr-only">
         <QRCodeOnly />
       </div>
     </>
