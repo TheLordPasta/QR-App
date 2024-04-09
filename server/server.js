@@ -194,43 +194,6 @@ app.post("/arapp/qrimage", upload.single("qr_image"), (req, res) => {
   });
 });
 
-// Route for converting the blob to an image
-app.get("/arapp/qrimage/blobtoimage/:fileName", async (req, res) => {
-  try {
-    const { fileName } = req.params; // Extract the file name from the URL parameters
-    const filePath = path.join(__dirname, "uploads", fileName);
-
-    // Read the blob data from the file
-    const blobData = fs.readFileSync(filePath, "base64");
-
-    // Convert blob to image
-    const imageData = await blobToImage(blobData);
-
-    // Generate a unique file name for the downloaded image
-    const downloadedFileName = `downloaded_image_${Date.now()}.png`;
-
-    // Save the image to a temporary file
-    fs.writeFileSync(downloadedFileName, imageData, "base64");
-
-    // Send the file as a downloadable attachment
-    res.download(downloadedFileName, (err) => {
-      if (err) {
-        console.error("Error downloading file:", err);
-        res.status(500).json({ error: "Internal Server Error" });
-      } else {
-        // Remove the temporary file after it has been sent
-        fs.unlinkSync(downloadedFileName);
-      }
-    });
-  } catch (error) {
-    console.error(
-      "Error converting blob to image or handling file download:",
-      error
-    );
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 // Route for updating word timings for an existing row based on id
 app.post("/arapp/wordtimings/:id", (req, res) => {
   const { id } = req.params;
