@@ -24,9 +24,40 @@ const QRCodePrintWall = () => {
   printElement("wallQR"); // Update this ID to match your wall QR code's element ID
 };
 
+const QRCodePrintOnlyHidden=()=>{
+  const para=document.getElementById("QrCodeOnlyParagraph");
+  const qr=document.getElementById("QrCodeOnly");
+  if (!para) {
+    console.error(`Element with id QrCodeOnly not found.`);
+    return;
+  }
+  if (!qr) {
+    console.error(`Element with id QrCodeOnly not found.`);
+    return;
+  }
+  para.style.visibility="hidden";
+  qr.style.visibility="hidden";
+}
+const QRCodePrintOnlyShown=()=>{
+  const para=document.getElementById("QrCodeOnlyParagraph");
+  const qr=document.getElementById("QrCodeOnly");
+  if (!para) {
+    console.error(`Element with id QrCodeOnly not found.`);
+    return;
+  }
+  if (!qr) {
+    console.error(`Element with id QrCodeOnly not found.`);
+    return;
+  }
+  qr.style.visibility="visible";
+  para.style.visibility="visible";
+}
+
 const PrinterQR = {
   QRCodePrintDesk,
   QRCodePrintWall,
+  QRCodePrintOnlyHidden,
+  QRCodePrintOnlyShown
 };
 
 export default PrinterQR;

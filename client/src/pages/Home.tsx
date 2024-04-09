@@ -63,8 +63,8 @@ function Home() {
   };
   // Inside uploadToDB function
   const uploadToDB = async (state: "wall" | "desk") => {
+    printer.QRCodePrintOnlyShown();
     const qrImageDiv = document.getElementById("qr-only");
-
     if (!qrImageDiv) {
       console.error("QR image div element not found");
       return;
@@ -75,7 +75,7 @@ function Home() {
         scale: 2, // Adjust scale as needed
         useCORS: false, // Set useCORS to false
       });
-
+      printer.QRCodePrintOnlyHidden();
       // Debugging: Check canvas size
       console.log("Canvas size:", canvas.width, "x", canvas.height);
 

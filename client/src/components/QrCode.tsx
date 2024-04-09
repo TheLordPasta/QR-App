@@ -1,3 +1,4 @@
+import { visibility } from "html2canvas/dist/types/css/property-descriptors/visibility";
 import QRCode from "react-qr-code";
 
 function QRCodeWall() {
@@ -34,9 +35,14 @@ function QRCodeDesk() {
 
 function QRCodeOnly() {
   return (
-    <div style={{ position: "absolute" }}>
+    <>
+    <div id="QrCodeOnly" style={{ position: "relative",visibility:"hidden"}}>
       <QRCode value="<https://www.google.com>" />
     </div>
+    <div id="QrCodeOnlyParagraph" style={{visibility:"hidden"}}>
+    <p> uploading.... Please wait a few seconds </p>
+    </div>
+    </>
   );
 }
 
