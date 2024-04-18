@@ -49,6 +49,10 @@ function Home() {
     }
 
     setUserInput({ ...userInput, selection, componentToRender: component });
+    let continueButton = document.getElementById(
+      "continue-button"
+    ) as HTMLInputElement;
+    continueButton.disabled = true;
   };
 
   const handleButtonClick = (divId: string) => {
@@ -60,8 +64,12 @@ function Home() {
       setImageSrc(deskImage);
     }
   };
-  // Inside uploadToDB function
-  const uploadToDB = async (state: "wall" | "desk") => {
+  function moveToNextPage(): void {
+    console.log("continue button clicked!");
+  }
+
+  //Inside uploadToDB function
+  const uploadToDB = async () => {
     printer.QRCodePrintOnlyShown();
     const qrImageDiv = document.getElementById("qr-only");
     if (!qrImageDiv) {
@@ -110,7 +118,7 @@ function Home() {
         console.log(pair[0], pair[1]);
       }
 
-      const response = await fetch("http://localhost:8081/arapp/qrimage", {
+      const response = await fetch("http://localhost:3000/arapp/qrimage", {
         method: "POST",
         body: formData,
       });
@@ -120,6 +128,10 @@ function Home() {
       if (response.ok) {
         console.log("QR uploaded successfully");
         setUserInput(initialState); // Reset user input after successful upload
+        let continueButton = document.getElementById(
+          "continue-button"
+        ) as HTMLInputElement;
+        continueButton.disabled = true;
       } else {
         console.error(
           "Failed to upload QR:",
@@ -183,7 +195,7 @@ function Home() {
               <input
                 type="submit"
                 value="Upload QR to DB"
-                onClick={() => uploadToDB("wall")}
+                // onClick={() => uploadToDB()}
               />
             </div>
             <div className="submit-button-container">
@@ -203,7 +215,7 @@ function Home() {
               <input
                 type="submit"
                 value="Upload QR to DB"
-                onClick={() => uploadToDB("desk")}
+                // onClick={() => uploadToDB()}
               />
             </div>
             <div className="submit-button-container">
@@ -235,6 +247,16 @@ function Home() {
         }}
       >
         <QRCodeOnly />
+      </div>
+      <div>
+        <button
+          disabled
+          id="continue-button"
+          type="button"
+          onClick={() => moveToNextPage()}
+        >
+          Continue
+        </button>
       </div>
     </>
   );
