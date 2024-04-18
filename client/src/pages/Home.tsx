@@ -6,7 +6,6 @@ import deskImage from "../assets/desk.jpg";
 import wallImage from "../assets/wall.jpeg";
 import Header from "../components/Header";
 import { QRCodeWall, QRCodeDesk, QRCodeOnly } from "../components/QrCode";
-import domtoimage from "dom-to-image";
 import html2canvas from "html2canvas";
 
 interface UserInputType {
