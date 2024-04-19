@@ -102,6 +102,12 @@ input {
   font-weight: 200;
   font-family: var(--main-font-family);
 }
+button:disabled,
+button[disabled] {
+  border: 1px solid #999999 !important;
+  background-color: #cccccc !important;
+  color: #666666 !important;
+}
 
 img {
   max-width: 100%;
@@ -195,7 +201,7 @@ input[type="submit"]:hover {
   background-color: var(--color-offwhite) !important;
   color: var(--color-button-text);
 }
-button:hover,
+button:enabled:hover,
 input[type="submit"]:hover {
   background: linear-gradient(
     to right,
