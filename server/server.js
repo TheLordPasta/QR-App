@@ -1,15 +1,27 @@
 const express = require("express");
+const session = require("express-session");
+const crypto = require("crypto");
 const mysql = require("mysql2");
 const multer = require("multer");
 const path = require("path");
-require("dotenv").config(); // Load environment variables from .env file
+require("dotenv").config();
 const cors = require("cors");
-const blobToImage = require("blob-to-image");
-const fs = require("fs");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Generate a random secret key
+const secretKey = crypto.randomBytes(32).toString("hex");
+
+// Configure session middleware
+app.use(
+  session({
+    secret: secretKey,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 // Multer storage configuration
 const storage = multer.diskStorage({
@@ -18,16 +30,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    let fileExtension = "";
-
-    // // Check if it's a blob file
-    // if (file.mimetype != "audio/mpeg") {
-    //   console.log("Blob");
-    //   fileExtension = ".blob"; // Set the extension for blob files
-    // } else {
-    //   fileExtension = path.extname(file.originalname); // Use original file extension for other files
-    // }
-
+    const fileExtension = path.extname(file.originalname);
     const fileName =
       uniqueSuffix +
       "-" +
@@ -123,9 +126,18 @@ app.post(
           console.error("Error executing SQL query:", err);
           return res.status(500).json({ error: "Internal Server Error" });
         }
-        return res
-          .status(200)
-          .json({ message: "Data inserted successfully", id: result.insertId });
+
+        if (req.session) {
+          req.session.ar_experience_id = result.insertId;
+        } else {
+          console.error("No request session");
+        }
+
+        return res.status(200).json({
+          message: "Data inserted successfully",
+          insert_id: result.insertId,
+          ar_experience_id: req.session.ar_experience_id, // Fixed typo here
+        });
       }
     );
   }
@@ -157,9 +169,10 @@ app.post("/arapp/navigation/:id", (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Record not found" });
     }
-    return res
-      .status(200)
-      .json({ message: "Navigation text updated successfully" });
+    return res.status(200).json({
+      message: "Navigation text updated successfully",
+      ar_experience_id: req.session.ar_experience_id,
+    });
   });
 });
 
@@ -171,7 +184,7 @@ app.post("/arapp/qrimage", upload.single("qr_image"), (req, res) => {
   } else {
     console.log("File is null");
   }
-  const qr_image_path = req.file ? `uploads/${req.file.filename}` : null; // Get the path of the uploaded image
+  const qr_image_path = req.file ? `uploads/${req.file.filename}` : null;
 
   const sql = `INSERT INTO ar_app_data 
           (qr_image_path, navigation, text, animations_string, mp3_path, model_name, word_timings, cm_from_ground, cm_out_of_wall, QR_placement_choice) 
@@ -188,9 +201,18 @@ app.post("/arapp/qrimage", upload.single("qr_image"), (req, res) => {
       console.error("Error inserting QR image:", err);
       return res.status(500).json({ error: "Internal Server Error" });
     }
-    return res
-      .status(200)
-      .json({ message: "QR image inserted successfully", id: result.insertId });
+
+    if (req.session) {
+      req.session.ar_experience_id = result.insertId;
+    } else {
+      console.error("No request session");
+    }
+
+    return res.status(200).json({
+      message: "QR image inserted successfully",
+      insert_id: result.insertId,
+      ar_experience_id: req.session.ar_experience_id,
+    });
   });
 });
 
@@ -208,16 +230,43 @@ app.post("/arapp/wordtimings/:id", (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Record not found" });
     }
-    return res
-      .status(200)
-      .json({ message: "Word timings updated successfully" });
+    return res.status(200).json({
+      message: "Word timings updated successfully",
+      ar_experience_id: req.session.ar_experience_id,
+    });
+  });
+});
+
+// Route for uploading mp3 file and updating mp3 path for an existing row based on id
+app.post("/arapp/mp3/:id", upload.single("mp3"), (req, res) => {
+  const id = req.params.id; // Extract ID from the URL
+
+  if (!req.file) {
+    return res.status(400).json({ error: "No MP3 file uploaded" });
+  }
+
+  const mp3_path = `uploads/${req.file.filename}`;
+
+  const sql = "UPDATE ar_app_data SET mp3_path = ? WHERE id = ?";
+  db.query(sql, [mp3_path, id], (err, result) => {
+    if (err) {
+      console.error("Error executing SQL query:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Record not found" });
+    }
+    return res.status(200).json({
+      message: "MP3 file uploaded successfully",
+      ar_experience_id: req.session.ar_experience_id,
+    });
   });
 });
 
 // Route for getting MP3 files based on mp3_path
 app.get("/uploads/:mp3Path", (req, res) => {
   const mp3Path = req.params.mp3Path;
-  const filePath = path.join(__dirname, "uploads", mp3Path); // Construct the file path
+  const filePath = path.join(__dirname, "uploads", mp3Path);
   res.download(filePath, (err) => {
     if (err) {
       console.error("Error downloading file:", err);
