@@ -11,6 +11,27 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+//------------------------------------------------------------
+app.use(express.static(path.join(__dirname, "QRbuild")));
+app.use(express.static(path.join(__dirname, "speechBuild")));
+app.use(express.static(path.join(__dirname, "navBuild")));
+
+//QR page
+app.get("/qr", function (req, res) {
+  res.sendFile(path.join(__dirname, "QRbuild", "index.html"));
+});
+
+//text-to-speech page
+app.get("/text-to-speech", function (req, res) {
+  res.sendFile(path.join(__dirname, "speechBuild", "index.html"));
+});
+
+//navigation page
+app.get("/navigation", function (req, res) {
+  res.sendFile(path.join(__dirname, "navBuild", "index.html"));
+});
+//------------------------------------------------------------
+
 // Generate a random secret key
 const secretKey = crypto.randomBytes(32).toString("hex");
 
@@ -275,7 +296,7 @@ app.get("/uploads/:mp3Path", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
