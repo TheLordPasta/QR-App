@@ -38,6 +38,7 @@ const printElement = (elementId: string) => {
   // Trigger the print dialog in the popup window
   printWindow.print();
   qr.style.visibility = "hidden";
+  printWindow.close();
   // Close the popup window after printing
   const checkPrintDialogClosed = () => {
     if (printWindow.closed) {
