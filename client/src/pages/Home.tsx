@@ -52,7 +52,7 @@ function Home() {
     let continueButton = document.getElementById(
       "continue-button"
     ) as HTMLInputElement;
-    continueButton.disabled = true;
+    continueButton.disabled = false;
   };
 
   const handleButtonClick = (divId: string) => {
@@ -128,10 +128,6 @@ function Home() {
       if (response.ok) {
         console.log("QR uploaded successfully");
         setUserInput(initialState); // Reset user input after successful upload
-        let continueButton = document.getElementById(
-          "continue-button"
-        ) as HTMLInputElement;
-        continueButton.disabled = true;
       } else {
         console.error(
           "Failed to upload QR:",
@@ -139,6 +135,10 @@ function Home() {
         );
       }
     } catch (error) {
+      let continueButton = document.getElementById(
+        "continue-button"
+      ) as HTMLInputElement;
+      continueButton.disabled = false;
       console.error("Error uploading QR code:", error);
     }
   };
@@ -195,7 +195,7 @@ function Home() {
               <input
                 type="submit"
                 value="Upload QR to DB"
-                // onClick={() => uploadToDB()}
+                onClick={() => uploadToDB()}
               />
             </div>
             <div className="submit-button-container">
@@ -215,7 +215,7 @@ function Home() {
               <input
                 type="submit"
                 value="Upload QR to DB"
-                // onClick={() => uploadToDB()}
+                onClick={() => uploadToDB()}
               />
             </div>
             <div className="submit-button-container">
