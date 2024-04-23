@@ -58,7 +58,7 @@ function Home() {
     }
 
     setUserInput({ ...userInput, selection, componentToRender: component });
-    setContinueButtonDisabled(false); // Enable continue button
+    // setContinueButtonDisabled(false); // Enable continue button
   };
 
   const handleButtonClick = (divId: string) => {
