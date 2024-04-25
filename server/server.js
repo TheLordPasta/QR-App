@@ -296,6 +296,12 @@ app.get("/uploads/:mp3Path", (req, res) => {
   });
 });
 
+// Route for the client to get the session id
+app.get("/get-session-data", (req, res) => {
+  const arExperienceId = req.session.ar_experience_id;
+  res.json({ ar_experience_id: arExperienceId });
+});
+
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
