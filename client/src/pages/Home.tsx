@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useEffect } from "react";
+import { ChangeEvent, useState } from "react";
 import { ReactNode } from "react";
 import "../App.css";
 import printer from "../components/printerQR"; // Assuming printerQR file exists
@@ -26,15 +26,6 @@ function Home() {
   const [userInput, setUserInput] = useState<UserInputType>(initialState);
   const [activeDiv, setActiveDiv] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState<string>(wallImage);
-  const [continueButtonDisabled, setContinueButtonDisabled] = useState(true);
-
-  // Initialize continue button state based on QR operations
-  useEffect(() => {
-    const continueButton = document.getElementById(
-      "continue-button"
-    ) as HTMLButtonElement;
-    continueButton.disabled = continueButtonDisabled;
-  }, [continueButtonDisabled]);
 
   const setWallInput = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput({ ...userInput, wallInput: e.target.value });
@@ -58,7 +49,10 @@ function Home() {
     }
 
     setUserInput({ ...userInput, selection, componentToRender: component });
-    // setContinueButtonDisabled(false); // Enable continue button
+    let continueButton = document.getElementById(
+      "continue-button"
+    ) as HTMLInputElement;
+    continueButton.disabled = false;
   };
 
   const handleButtonClick = (divId: string) => {
@@ -70,7 +64,11 @@ function Home() {
       setImageSrc(deskImage);
     }
   };
+  function moveToNextPage(): void {
+    console.log("continue button clicked!");
+  }
 
+  //Inside uploadToDB function
   const uploadToDB = async () => {
     printer.QRCodePrintOnlyShown();
     const qrImageDiv = document.getElementById("qr-only");
@@ -81,12 +79,14 @@ function Home() {
 
     try {
       const canvas = await html2canvas(qrImageDiv, {
-        scale: 2,
-        useCORS: false,
+        scale: 2, // Adjust scale as needed
+        useCORS: false, // Set useCORS to false
       });
       printer.QRCodePrintOnlyHidden();
+      // Debugging: Check canvas size
       console.log("Canvas size:", canvas.width, "x", canvas.height);
 
+      // Convert canvas to Blob
       const blobData = await new Promise<Blob | null>((resolve) => {
         canvas.toBlob((blob) => resolve(blob), "image/png");
       });
@@ -96,6 +96,7 @@ function Home() {
         return;
       }
 
+      // Debugging: Check Blob size and type
       console.log("Blob size:", blobData.size);
       console.log("Blob type:", blobData.type);
 
@@ -112,6 +113,7 @@ function Home() {
         formData.append("qr_placement_choice", "Desk");
       }
 
+      // Debugging: Check FormData contents
       for (const pair of formData.entries()) {
         console.log(pair[0], pair[1]);
       }
@@ -121,12 +123,11 @@ function Home() {
         body: formData,
       });
 
-      const responseData = await response.json();
+      const responseData = await response.json(); // Assuming server responds with JSON data
 
       if (response.ok) {
         console.log("QR uploaded successfully");
-        setUserInput(initialState);
-        setContinueButtonDisabled(false); // Enable continue button
+        setUserInput(initialState); // Reset user input after successful upload
       } else {
         console.error(
           "Failed to upload QR:",
@@ -134,14 +135,8 @@ function Home() {
         );
       }
     } catch (error) {
-      setContinueButtonDisabled(true); // Disable continue button
       console.error("Error uploading QR code:", error);
     }
-  };
-
-  const moveToNextPage = (): void => {
-    console.log("continue button clicked!");
-    document.location.href = "http://localhost:3000/text-to-speech";
   };
 
   return (
@@ -183,7 +178,7 @@ function Home() {
               id="cm_from_ground"
               required
             />
-            <br />
+            <br></br>
             <label htmlFor="cm_out_of_wall">Enter cm out of the wall:</label>
             <input
               type="number"
@@ -251,7 +246,7 @@ function Home() {
       </div>
       <div>
         <button
-          disabled={continueButtonDisabled}
+          disabled
           id="continue-button"
           type="button"
           onClick={() => moveToNextPage()}

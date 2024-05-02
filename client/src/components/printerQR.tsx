@@ -1,5 +1,5 @@
 // Assuming you are still using TypeScript, you can define your props interface as needed.
-
+import "../App.css";
 const printElement = (elementId: string) => {
   const qr = document.getElementById(elementId);
   if (!qr) {
@@ -20,11 +20,23 @@ const printElement = (elementId: string) => {
   const printContent = `
     <html>
       <head>
-        <style>
-          ${document.head.innerHTML}
-        </style>
+        
       </head>
       <body>
+      <style>
+        #deskQR {
+          border-image: url("/QR_desk_arrows.png") 200 180 / 80px;
+          width: 400px !important;
+          height: 400px !important;
+          visibility: hidden;
+        }
+        #wallQR {
+          border-image: url("/QR_wall_arrows.png") 200 180 / 80px;
+          width: 400px !important;
+          height: 400px !important;
+          visibility: hidden;
+        }
+        </style>
         ${qr.outerHTML}
       </body>
     </html>
@@ -38,9 +50,16 @@ const printElement = (elementId: string) => {
   // Trigger the print dialog in the popup window
   printWindow.print();
   qr.style.visibility = "hidden";
-  printWindow.onafterprint = () => {
-    printWindow.close();
+  // Close the popup window after printing
+  const checkPrintDialogClosed = () => {
+    if (printWindow.closed) {
+      clearTimeout(timeout);
+      return;
+    }
+    timeout = setTimeout(checkPrintDialogClosed, 500);
   };
+
+  let timeout = setTimeout(checkPrintDialogClosed, 500);
 };
 const QRCodePrintDesk = () => {
   // Open the popup window and store its reference
