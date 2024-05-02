@@ -181,8 +181,11 @@ app.post("/arapp/navigation/:id", (req, res) => {
   const { id } = req.params;
   const { navigation } = req.body;
 
+  // Convert the navigation object to a string before storing in the database
+  const stringifiedNavigation = JSON.stringify(navigation);
+
   const sql = "UPDATE ar_app_data SET navigation = ? WHERE id = ?";
-  db.query(sql, [navigation, id], (err, result) => {
+  db.query(sql, [stringifiedNavigation, id], (err, result) => {
     if (err) {
       console.error("Error updating navigation text:", err);
       return res.status(500).json({ error: "Internal Server Error" });
@@ -242,8 +245,11 @@ app.post("/arapp/wordtimings/:id", (req, res) => {
   const { id } = req.params;
   const { word_timings } = req.body;
 
+  // Convert the word_timings object to a string before storing in the database
+  const stringifiedWordTimings = JSON.stringify(word_timings);
+
   const sql = "UPDATE ar_app_data SET word_timings = ? WHERE id = ?";
-  db.query(sql, [word_timings, id], (err, result) => {
+  db.query(sql, [stringifiedWordTimings, id], (err, result) => {
     if (err) {
       console.error("Error updating word timings:", err);
       return res.status(500).json({ error: "Internal Server Error" });
