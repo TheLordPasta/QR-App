@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useState, useEffect } from "react";
 import { ReactNode } from "react";
 import "../App.css";
 import printer from "../components/printerQR"; // Assuming printerQR file exists
@@ -7,37 +7,40 @@ import wallImage from "../assets/wall.jpeg";
 import Header from "../components/Header";
 import { QRCodeWall, QRCodeDesk, QRCodeOnly } from "../components/QrCode";
 import html2canvas from "html2canvas";
-
 interface UserInputType {
   wallInput: string;
   floorInput: string;
   selection: string;
   componentToRender: ReactNode | null; // Updated type
 }
-
 const initialState: UserInputType = {
   wallInput: "",
   floorInput: "",
   selection: "",
   componentToRender: null,
 };
-
 function Home() {
   const [userInput, setUserInput] = useState<UserInputType>(initialState);
   const [activeDiv, setActiveDiv] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState<string>(wallImage);
+  const [continueButtonDisabled, setContinueButtonDisabled] = useState(true);
+
+  // Initialize continue button state based on QR operations
+  useEffect(() => {
+    const continueButton = document.getElementById(
+      "continue-button"
+    ) as HTMLButtonElement;
+    continueButton.disabled = continueButtonDisabled;
+  }, [continueButtonDisabled]);
 
   const setWallInput = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput({ ...userInput, wallInput: e.target.value });
   };
-
   const setFloorInput = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput({ ...userInput, floorInput: e.target.value });
   };
-
   const placeIt = (selection: "wall" | "desk") => {
     let component = null; // Initialize component
-
     if (selection === "wall") {
       printer.QRCodePrintWall(); // Assuming printer has this method
       console.log(`Printing wall qr..`);
@@ -49,26 +52,18 @@ function Home() {
     }
 
     setUserInput({ ...userInput, selection, componentToRender: component });
-    let continueButton = document.getElementById(
-      "continue-button"
-    ) as HTMLInputElement;
-    continueButton.disabled = false;
+    // setContinueButtonDisabled(false); // Enable continue button
   };
 
   const handleButtonClick = (divId: string) => {
     setActiveDiv(divId);
-
     if (divId === "wallDiv") {
       setImageSrc(wallImage);
     } else if (divId === "tableDiv") {
       setImageSrc(deskImage);
     }
   };
-  function moveToNextPage(): void {
-    console.log("continue button clicked!");
-  }
 
-  //Inside uploadToDB function
   const uploadToDB = async () => {
     printer.QRCodePrintOnlyShown();
     const qrImageDiv = document.getElementById("qr-only");
@@ -79,30 +74,25 @@ function Home() {
 
     try {
       const canvas = await html2canvas(qrImageDiv, {
-        scale: 2, // Adjust scale as needed
-        useCORS: false, // Set useCORS to false
+        scale: 2,
+        useCORS: false,
       });
       printer.QRCodePrintOnlyHidden();
-      // Debugging: Check canvas size
       console.log("Canvas size:", canvas.width, "x", canvas.height);
 
-      // Convert canvas to Blob
       const blobData = await new Promise<Blob | null>((resolve) => {
         canvas.toBlob((blob) => resolve(blob), "image/png");
       });
-
       if (!blobData) {
         console.error("Failed to convert canvas to Blob");
         return;
       }
 
-      // Debugging: Check Blob size and type
       console.log("Blob size:", blobData.size);
       console.log("Blob type:", blobData.type);
 
       const formData = new FormData();
       formData.append("qr_image", blobData, "qr_image.png");
-
       if (userInput.wallInput && userInput.floorInput) {
         console.log("User input is Wall");
         formData.append("cm_from_ground", userInput.floorInput);
@@ -113,21 +103,20 @@ function Home() {
         formData.append("qr_placement_choice", "Desk");
       }
 
-      // Debugging: Check FormData contents
       for (const pair of formData.entries()) {
         console.log(pair[0], pair[1]);
       }
-
       const response = await fetch("http://localhost:3000/arapp/qrimage", {
         method: "POST",
         body: formData,
       });
 
-      const responseData = await response.json(); // Assuming server responds with JSON data
+      const responseData = await response.json();
 
       if (response.ok) {
         console.log("QR uploaded successfully");
-        setUserInput(initialState); // Reset user input after successful upload
+        setUserInput(initialState);
+        setContinueButtonDisabled(false); // Enable continue button
       } else {
         console.error(
           "Failed to upload QR:",
@@ -135,8 +124,14 @@ function Home() {
         );
       }
     } catch (error) {
+      setContinueButtonDisabled(true); // Disable continue button
       console.error("Error uploading QR code:", error);
     }
+  };
+
+  const moveToNextPage = (): void => {
+    console.log("continue button clicked!");
+    document.location.href = "http://localhost:3000/text-to-speech";
   };
 
   return (
@@ -155,7 +150,6 @@ function Home() {
             >
               Wall
             </button>
-
             <button
               className="top-button"
               type="button"
@@ -165,7 +159,6 @@ function Home() {
               Table
             </button>
           </div>
-
           <div
             id="wallDiv"
             style={{ display: activeDiv === "wallDiv" ? "block" : "none" }}
@@ -178,7 +171,7 @@ function Home() {
               id="cm_from_ground"
               required
             />
-            <br></br>
+            <br />
             <label htmlFor="cm_out_of_wall">Enter cm out of the wall:</label>
             <input
               type="number"
@@ -202,7 +195,6 @@ function Home() {
               />
             </div>
           </div>
-
           <div
             id="tableDiv"
             style={{ display: activeDiv === "tableDiv" ? "block" : "none" }}
@@ -232,7 +224,6 @@ function Home() {
           />
         </div>
       </div>
-
       <QRCodeDesk />
       <QRCodeWall />
       <div
@@ -246,7 +237,7 @@ function Home() {
       </div>
       <div>
         <button
-          disabled
+          disabled={continueButtonDisabled}
           id="continue-button"
           type="button"
           onClick={() => moveToNextPage()}
@@ -257,5 +248,4 @@ function Home() {
     </>
   );
 }
-
 export default Home;
