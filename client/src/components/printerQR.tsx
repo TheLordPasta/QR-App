@@ -51,15 +51,9 @@ const printElement = (elementId: string) => {
   printWindow.print();
   qr.style.visibility = "hidden";
   // Close the popup window after printing
-  const checkPrintDialogClosed = () => {
-    if (printWindow.closed) {
-      clearTimeout(timeout);
-      return;
-    }
-    timeout = setTimeout(checkPrintDialogClosed, 500);
+  printWindow.onafterprint = () => {
+    printWindow.close();
   };
-
-  let timeout = setTimeout(checkPrintDialogClosed, 500);
 };
 const QRCodePrintDesk = () => {
   // Open the popup window and store its reference
